@@ -1,0 +1,2027 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Tetris.Phonk</title>
+
+<style>
+/* =========================================================
+   TETRIS.PHONK
+   ESTILO GENERAL
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at center, #24133f 0%, #10091d 45%, #05030a 100%);
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    overflow: hidden;
+}
+
+/* Fondo decorativo */
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 35px 35px;
+    pointer-events: none;
+}
+
+/* =========================================================
+   PANTALLAS
+   ========================================================= */
+
+.screen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* =========================================================
+   MENÚ PRINCIPAL
+   ========================================================= */
+
+.menu {
+    text-align: center;
+    padding: 30px;
+}
+
+.logo {
+    font-size: clamp(48px, 10vw, 100px);
+    font-weight: 900;
+    letter-spacing: 8px;
+    color: #ffffff;
+    text-shadow:
+        0 0 10px #b100ff,
+        0 0 25px #b100ff,
+        0 0 50px #7a00ff;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    color: #c8a8ff;
+    letter-spacing: 6px;
+    margin-bottom: 45px;
+    font-size: 15px;
+}
+
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 280px;
+    margin: auto;
+}
+
+.menu-button {
+    border: 2px solid #a100ff;
+    background: rgba(100, 0, 160, 0.15);
+    color: white;
+    padding: 17px;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+    box-shadow: 0 0 12px rgba(160,0,255,0.3);
+}
+
+.menu-button:hover {
+    background: #8a00d4;
+    transform: scale(1.04);
+    box-shadow:
+        0 0 15px #a100ff,
+        0 0 35px #a100ff;
+}
+
+.footer {
+    margin-top: 40px;
+    color: #715b8d;
+    font-size: 12px;
+}
+
+/* =========================================================
+   JUEGO
+   ========================================================= */
+
+#gameScreen {
+    padding: 15px;
+}
+
+.game-container {
+    display: flex;
+    gap: 25px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* =========================================================
+   TABLERO
+   ========================================================= */
+
+.board-wrapper {
+    position: relative;
+    padding: 10px;
+    border: 2px solid #8b00ff;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.5);
+    box-shadow:
+        0 0 15px #8b00ff,
+        inset 0 0 25px rgba(120,0,255,0.2);
+}
+
+#gameCanvas {
+    display: block;
+    background: #08050d;
+    border-radius: 5px;
+}
+
+/* =========================================================
+   PANEL LATERAL
+   ========================================================= */
+
+.side-panel {
+    width: 190px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.panel-title {
+    font-size: 22px;
+    font-weight: 900;
+    color: #e4c8ff;
+    text-shadow: 0 0 10px #a000ff;
+    letter-spacing: 2px;
+}
+
+.stat-box {
+    background: rgba(30, 10, 45, 0.8);
+    border: 1px solid #63218b;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.stat-label {
+    color: #a68bbd;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 4px;
+}
+
+#nextCanvas {
+    width: 120px;
+    height: 100px;
+    background: #08050d;
+    border-radius: 8px;
+    border: 1px solid #63218b;
+    display: block;
+    margin: auto;
+}
+
+.game-button {
+    padding: 11px;
+    border-radius: 7px;
+    border: 1px solid #8b00ff;
+    background: rgba(110,0,160,0.2);
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.game-button:hover {
+    background: #7200a8;
+}
+
+/* =========================================================
+   PAUSA / GAME OVER
+   ========================================================= */
+
+.overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 2, 10, 0.88);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border-radius: 10px;
+}
+
+.overlay-content {
+    padding: 30px;
+}
+
+.overlay h2 {
+    font-size: 45px;
+    color: white;
+    text-shadow: 0 0 20px #c000ff;
+    margin-bottom: 15px;
+}
+
+.overlay p {
+    color: #c8b6d8;
+    margin-bottom: 25px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+
+@media (max-width: 700px) {
+
+    body {
+        overflow: auto;
+    }
+
+    #gameScreen {
+        position: absolute;
+        min-height: 100%;
+        height: auto;
+    }
+
+    .game-container {
+        flex-direction: column;
+    }
+
+    .side-panel {
+        width: min(300px, 90vw);
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .panel-title {
+        grid-column: 1 / -1;
+        text-align: center;
+    }
+
+    .next-box {
+        grid-column: 1 / -1;
+    }
+
+    .controls {
+        grid-column: 1 / -1;
+        text-align: center;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =======================================================
+     MENÚ PRINCIPAL
+     ======================================================= -->
+
+<section id="menuScreen" class="screen">
+
+    <div class="menu">
+
+        <div class="logo">
+            TETRIS
+        </div>
+
+        <div class="subtitle">
+            .PHONK
+        </div>
+
+        <div class="menu-buttons">
+
+            <button class="menu-button" id="startButton">
+                ▶ JUGAR
+            </button>
+
+            <button class="menu-button" id="musicButton">
+                🔊 MÚSICA: ON
+            </button>
+
+            <button class="menu-button" id="controlsButton">
+                🎮 CONTROLES
+            </button>
+
+        </div>
+
+        <div class="footer">
+            Tetris.Phonk — Classic Block Game
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =======================================================
+     PANTALLA DEL JUEGO
+     ======================================================= -->
+
+<section id="gameScreen" class="screen hidden">
+
+    <div class="game-container">
+
+        <!-- TABLERO -->
+
+        <div class="board-wrapper">
+
+            <canvas
+                id="gameCanvas"
+                width="300"
+                height="600">
+            </canvas>
+
+            <!-- OVERLAY -->
+
+            <div id="gameOverlay" class="overlay hidden">
+
+                <div class="overlay-content">
+
+                    <h2 id="overlayTitle">
+                        GAME OVER
+                    </h2>
+
+                    <p id="overlayText">
+                        Tu partida terminó.
+                    </p>
+
+                    <button
+                        class="menu-button"
+                        id="retryButton">
+                        🔄 REINTENTAR
+                    </button>
+
+                    <br>
+
+                    <button
+                        class="game-button"
+                        id="menuButton">
+                        🏠 MENÚ
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PANEL -->
+
+        <div class="side-panel">
+
+            <div class="panel-title">
+                TETRIS.PHONK
+            </div>
+
+            <div class="stat-box">
+                <div class="stat-label">
+                    Puntaje
+                </div>
+
+                <div
+                    class="stat-value"
+                    id="score">
+                    0
+                </div>
+            </div>
+
+            <div class="stat-box">
+                <div class="stat-label">
+                    Nivel
+                </div>
+
+                <div
+                    class="stat-value"
+                    id="level">
+                    1
+                </div>
+            </div>
+
+            <div class="stat-box">
+                <div class="stat-label">
+                    Líneas
+                </div>
+
+                <div
+                    class="stat-value"
+                    id="lines">
+                    0
+                </div>
+            </div>
+
+            <div class="stat-box next-box">
+
+                <div class="stat-label">
+                    Próxima pieza
+                </div>
+
+                <br>
+
+                <canvas
+                    id="nextCanvas"
+                    width="120"
+                    height="100">
+                </canvas>
+
+            </div>
+
+            <button
+                class="game-button"
+                id="pauseButton">
+                ⏸ PAUSAR
+            </button>
+
+            <button
+                class="game-button"
+                id="exitButton">
+                🏠 SALIR
+            </button>
+
+            <div class="controls">
+
+                <b>CONTROLES</b><br>
+
+                <span class="key">A</span>
+                Izquierda<br>
+
+                <span class="key">D</span>
+                Derecha<br>
+
+                <span class="key">S</span>
+                Bajar<br>
+
+                <span class="key">W</span>
+                Rotar<br>
+
+                <span class="key">ESPACIO</span>
+                Hard Drop<br>
+
+                <span class="key">P</span>
+                Pausa
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =======================================================
+     AUDIO
+     ======================================================= -->
+
+<audio
+    id="music"
+    preload="auto">
+</audio>
+
+
+<script>
+
+/* =========================================================
+   CONFIGURACIÓN
+   ========================================================= */
+
+const BOARD_WIDTH = 10;
+const BOARD_HEIGHT = 20;
+
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+const nextCanvas = document.getElementById("nextCanvas");
+const nextCtx = nextCanvas.getContext("2d");
+
+const CELL_SIZE = canvas.width / BOARD_WIDTH;
+
+
+/* =========================================================
+   COLORES DE LAS PIEZAS
+   ========================================================= */
+
+const COLORS = [
+    null,
+    "#00eaff", // I
+    "#ffe600", // O
+    "#b800ff", // T
+    "#00ff66", // S
+    "#ff304f", // Z
+    "#2878ff", // J
+    "#ff8c00"  // L
+];
+
+
+/* =========================================================
+   PIEZAS
+   =========================================================
+
+   0 = I
+   1 = O
+   2 = T
+   3 = S
+   4 = Z
+   5 = J
+   6 = L
+
+   Exactamente basadas en tu código C++.
+   ========================================================= */
+
+const SHAPES = [
+
+    // I
+    [
+        [
+            [0,0,0,0],
+            [1,1,1,1],
+            [0,0,0,0],
+            [0,0,0,0]
+        ],
+        [
+            [0,1,0,0],
+            [0,1,0,0],
+            [0,1,0,0],
+            [0,1,0,0]
+        ],
+        [
+            [0,0,0,0],
+            [0,0,0,0],
+            [1,1,1,1],
+            [0,0,0,0]
+        ],
+        [
+            [0,0,1,0],
+            [0,0,1,0],
+            [0,0,1,0],
+            [0,0,1,0]
+        ]
+    ],
+
+    // O
+    [
+        [
+            [0,1,1,0],
+            [0,1,1,0],
+            [0,0,0,0],
+            [0,0,0,0]
+        ],
+        [
+            [0,1,1,0],
+            [0,1,1,0],
+            [0,0,0,0],
+            [0,0,0,0]
+        ],
+        [
+            [0,1,1,0],
+            [0,1,1,0],
+            [0,0,0,0],
+            [0,0,0,0]
+        ],
+        [
+            [0,1,1,0],
+            [0,1,1,0],
+            [0,0,0,0],
+            [0,0,0,0]
+        ]
+    ],
+
+    // T
+    [
+        [
+            [0,1,0,0],
+            [1,1,1,0],
+            [0,0,0,0],
+            [0,0,0,0]
+        ],
+        [
+            [0,1,0,0],
+            [0,1,1,0],
+            [0,1,0,0],
+            [0,0,0,0]
+        ],
+        [
+            [0,0,0,0],
+            [1,1,1,0],
+            [0,1,0,0],
+            [0,0,0,0]
+        ],
+        [
+            [0,1,0,0],
+            [1,1,0,0],
+            [0,1,0,0],
+            [0,0,0,0]
+        ]
+    ],
+
+    // S
+    [
+        [
+            [0,1,1,0],
+            [1,1,0,0],
+            [0,0,0,0],
+            [0,0,0,0]
+        ],
+        [
+            [0,1,0,0],
+            [0,1,1,0],
+            [0,0,1,0],
+            [0,0,0,0]
+        ],
+        [
+            [0,1,1,0],
+            [1,1,0,0],
+            [0,0,0,0],
+            [0,0,0,0]
+        ],
+        [
+            [0,1,0,0],
+            [0,1,1,0],
+            [0,0,1,0],
+            [0,0,0,0]
+        ]
+    ],
+
+    // Z
+    [
+        [
+            [1,1,0,0],
+            [0,1,1,0],
+            [0,0,0,0],
+            [0,0,0,0]
+        ],
+        [
+            [0,0,1,0],
+            [0,1,1,0],
+            [0,1,0,0],
+            [0,0,0,0]
+        ],
+        [
+            [1,1,0,0],
+            [0,1,1,0],
+            [0,0,0,0],
+            [0,0,0,0]
+        ],
+        [
+            [0,0,1,0],
+            [0,1,1,0],
+            [0,1,0,0],
+            [0,0,0,0]
+        ]
+    ],
+
+    // J
+    [
+        [
+            [1,0,0,0],
+            [1,1,1,0],
+            [0,0,0,0],
+            [0,0,0,0]
+        ],
+        [
+            [0,1,1,0],
+            [0,1,0,0],
+            [0,1,0,0],
+            [0,0,0,0]
+        ],
+        [
+            [0,0,0,0],
+            [1,1,1,0],
+            [0,0,1,0],
+            [0,0,0,0]
+        ],
+        [
+            [0,1,0,0],
+            [0,1,0,0],
+            [1,1,0,0],
+            [0,0,0,0]
+        ]
+    ],
+
+    // L
+    [
+        [
+            [0,0,1,0],
+            [1,1,1,0],
+            [0,0,0,0],
+            [0,0,0,0]
+        ],
+        [
+            [0,1,0,0],
+            [0,1,0,0],
+            [0,1,1,0],
+            [0,0,0,0]
+        ],
+        [
+            [0,0,0,0],
+            [1,1,1,0],
+            [1,0,0,0],
+            [0,0,0,0]
+        ],
+        [
+            [1,1,0,0],
+            [0,1,0,0],
+            [0,1,0,0],
+            [0,0,0,0]
+        ]
+    ]
+
+];
+
+
+/* =========================================================
+   ESTADO DEL JUEGO
+   ========================================================= */
+
+let board;
+
+let currentPiece;
+let nextPiece;
+
+let score = 0;
+let lines = 0;
+let level = 1;
+
+let gameOver = false;
+let paused = false;
+let gameRunning = false;
+
+let lastFall = 0;
+
+let musicEnabled = true;
+
+const songs = [
+    "music1.mp3",
+    "music2.mp3",
+    "music3.mp3",
+    "music4.mp3"
+];
+
+let currentSong = -1;
+let musicVolume = 0.60;
+
+const music = document.getElementById("music");
+music.volume = musicVolume;
+
+function playRandomSong() {
+
+    if (!musicEnabled || songs.length === 0)
+        return;
+
+    let newSong;
+
+    do {
+        newSong =
+            Math.floor(Math.random() * songs.length);
+    }
+    while (
+        songs.length > 1 &&
+        newSong === currentSong
+    );
+
+    currentSong = newSong;
+
+    music.src = songs[currentSong];
+    music.currentTime = 0;
+
+    music.play().catch(() => {
+        console.log(
+            "El navegador bloqueó la reproducción automática."
+        );
+    });
+}
+
+function setVolume(value) {
+
+    musicVolume =
+        Math.max(
+            0,
+            Math.min(1, value)
+        );
+
+    music.volume = musicVolume;
+
+    const percent =
+        Math.round(musicVolume * 100);
+
+    document
+        .getElementById("volumeSlider")
+        .value = percent;
+
+    document
+        .getElementById("volumeValue")
+        .textContent = percent + "%";
+}
+
+function changeVolume(amount) {
+    setVolume(musicVolume + amount);
+}
+
+music.addEventListener("ended", function() {
+    if (musicEnabled) {
+        playRandomSong();
+    }
+});
+
+
+/* =========================================================
+   CREAR TABLERO
+   ========================================================= */
+
+function createBoard() {
+
+    board = [];
+
+    for (let y = 0; y < BOARD_HEIGHT; y++) {
+
+        board[y] = [];
+
+        for (let x = 0; x < BOARD_WIDTH; x++) {
+
+            board[y][x] = 0;
+
+        }
+    }
+}
+
+
+/* =========================================================
+   CREAR PIEZA
+   ========================================================= */
+
+function createPiece() {
+
+    return {
+
+        type: Math.floor(Math.random() * 7),
+
+        rotation: 0,
+
+        x: Math.floor(BOARD_WIDTH / 2) - 2,
+
+        y: 0
+
+    };
+}
+
+
+/* =========================================================
+   COLISIÓN
+   ========================================================= */
+
+function collision(piece) {
+
+    const shape =
+        SHAPES[piece.type][piece.rotation];
+
+    for (let py = 0; py < 4; py++) {
+
+        for (let px = 0; px < 4; px++) {
+
+            if (!shape[py][px])
+                continue;
+
+            const boardX = piece.x + px;
+            const boardY = piece.y + py;
+
+            if (boardX < 0)
+                return true;
+
+            if (boardX >= BOARD_WIDTH)
+                return true;
+
+            if (boardY >= BOARD_HEIGHT)
+                return true;
+
+            if (
+                boardY >= 0 &&
+                board[boardY][boardX] !== 0
+            ) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+
+/* =========================================================
+   BLOQUEAR PIEZA
+   ========================================================= */
+
+function lockPiece(piece) {
+
+    const shape =
+        SHAPES[piece.type][piece.rotation];
+
+    for (let py = 0; py < 4; py++) {
+
+        for (let px = 0; px < 4; px++) {
+
+            if (!shape[py][px])
+                continue;
+
+            const x = piece.x + px;
+            const y = piece.y + py;
+
+            if (
+                x >= 0 &&
+                x < BOARD_WIDTH &&
+                y >= 0 &&
+                y < BOARD_HEIGHT
+            ) {
+
+                board[y][x] =
+                    piece.type + 1;
+            }
+        }
+    }
+}
+
+
+/* =========================================================
+   LIMPIAR LÍNEAS
+   ========================================================= */
+
+function clearLines() {
+
+    let cleared = 0;
+
+    for (
+        let y = BOARD_HEIGHT - 1;
+        y >= 0;
+        y--
+    ) {
+
+        let complete = true;
+
+        for (let x = 0; x < BOARD_WIDTH; x++) {
+
+            if (board[y][x] === 0) {
+
+                complete = false;
+                break;
+
+            }
+        }
+
+        if (complete) {
+
+            board.splice(y, 1);
+
+            board.unshift(
+                new Array(BOARD_WIDTH).fill(0)
+            );
+
+            cleared++;
+
+            y++;
+        }
+    }
+
+    return cleared;
+}
+
+
+/* =========================================================
+   PUNTUACIÓN
+   ========================================================= */
+
+function addLineScore(cleared) {
+
+    if (cleared === 1) {
+
+        score += 100 * level;
+
+    }
+    else if (cleared === 2) {
+
+        score += 300 * level;
+
+    }
+    else if (cleared === 3) {
+
+        score += 500 * level;
+
+    }
+    else if (cleared === 4) {
+
+        score += 800 * level;
+
+    }
+
+    lines += cleared;
+
+    level =
+        Math.floor(lines / 10) + 1;
+
+}
+
+
+/* =========================================================
+   ROTACIÓN
+   ========================================================= */
+
+function rotatePiece() {
+
+    let rotated = {
+
+        ...currentPiece,
+
+        rotation:
+            (currentPiece.rotation + 1) % 4
+
+    };
+
+    if (!collision(rotated)) {
+
+        currentPiece = rotated;
+        return;
+
+    }
+
+    rotated.x =
+        currentPiece.x - 1;
+
+    if (!collision(rotated)) {
+
+        currentPiece = rotated;
+        return;
+
+    }
+
+    rotated.x =
+        currentPiece.x + 1;
+
+    if (!collision(rotated)) {
+
+        currentPiece = rotated;
+        return;
+
+    }
+
+    rotated.x =
+        currentPiece.x - 2;
+
+    if (!collision(rotated)) {
+
+        currentPiece = rotated;
+        return;
+
+    }
+
+    rotated.x =
+        currentPiece.x + 2;
+
+    if (!collision(rotated)) {
+
+        currentPiece = rotated;
+
+    }
+}
+
+
+/* =========================================================
+   HARD DROP
+   ========================================================= */
+
+function hardDrop() {
+
+    let distance = 0;
+
+    while (true) {
+
+        const test = {
+
+            ...currentPiece,
+
+            y: currentPiece.y + 1
+
+        };
+
+        if (collision(test))
+            break;
+
+        currentPiece.y++;
+        distance++;
+    }
+
+    score += distance * 2;
+
+    placePiece();
+}
+
+
+/* =========================================================
+   COLOCAR PIEZA
+   ========================================================= */
+
+function placePiece() {
+
+    lockPiece(currentPiece);
+
+    const cleared = clearLines();
+
+    addLineScore(cleared);
+
+    currentPiece = nextPiece;
+
+    nextPiece = createPiece();
+
+    if (collision(currentPiece)) {
+
+        endGame();
+    }
+
+}
+
+
+/* =========================================================
+   VELOCIDAD
+   ========================================================= */
+
+function getFallDelay() {
+
+    let delay =
+        600 - ((level - 1) * 65);
+
+    if (delay < 70)
+        delay = 70;
+
+    return delay;
+}
+
+
+/* =========================================================
+   GHOST PIECE
+   ========================================================= */
+
+function getGhostPiece() {
+
+    const ghost = {
+        ...currentPiece
+    };
+
+    while (true) {
+
+        const test = {
+            ...ghost,
+            y: ghost.y + 1
+        };
+
+        if (collision(test))
+            break;
+
+        ghost.y++;
+    }
+
+    return ghost;
+}
+
+
+/* =========================================================
+   DIBUJAR BLOQUE
+   ========================================================= */
+
+function drawBlock(
+    context,
+    x,
+    y,
+    size,
+    color,
+    alpha = 1
+) {
+
+    context.globalAlpha = alpha;
+
+    context.fillStyle = color;
+
+    context.fillRect(
+        x + 1,
+        y + 1,
+        size - 2,
+        size - 2
+    );
+
+    context.strokeStyle =
+        "rgba(255,255,255,0.3)";
+
+    context.strokeRect(
+        x + 1,
+        y + 1,
+        size - 2,
+        size - 2
+    );
+
+    context.globalAlpha = 1;
+}
+
+
+/* =========================================================
+   DIBUJAR TABLERO
+   ========================================================= */
+
+function drawBoard() {
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    /* Fondo */
+
+    ctx.fillStyle = "#08050d";
+
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+    /* Cuadrícula */
+
+    ctx.strokeStyle =
+        "rgba(255,255,255,0.045)";
+
+    ctx.lineWidth = 1;
+
+    for (let x = 0; x <= BOARD_WIDTH; x++) {
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            x * CELL_SIZE,
+            0
+        );
+
+        ctx.lineTo(
+            x * CELL_SIZE,
+            canvas.height
+        );
+
+        ctx.stroke();
+    }
+
+    for (let y = 0; y <= BOARD_HEIGHT; y++) {
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            0,
+            y * CELL_SIZE
+        );
+
+        ctx.lineTo(
+            canvas.width,
+            y * CELL_SIZE
+        );
+
+        ctx.stroke();
+    }
+
+
+    /* Piezas bloqueadas */
+
+    for (let y = 0; y < BOARD_HEIGHT; y++) {
+
+        for (let x = 0; x < BOARD_WIDTH; x++) {
+
+            const value = board[y][x];
+
+            if (value !== 0) {
+
+                drawBlock(
+                    ctx,
+                    x * CELL_SIZE,
+                    y * CELL_SIZE,
+                    CELL_SIZE,
+                    COLORS[value]
+                );
+
+            }
+        }
+    }
+
+
+    /* Ghost */
+
+    if (
+        currentPiece &&
+        gameRunning &&
+        !gameOver
+    ) {
+
+        const ghost =
+            getGhostPiece();
+
+        drawPiece(
+            ctx,
+            ghost,
+            true
+        );
+    }
+
+
+    /* Pieza actual */
+
+    if (
+        currentPiece &&
+        !gameOver
+    ) {
+
+        drawPiece(
+            ctx,
+            currentPiece,
+            false
+        );
+
+    }
+}
+
+
+/* =========================================================
+   DIBUJAR PIEZA
+   ========================================================= */
+
+function drawPiece(
+    context,
+    piece,
+    ghost = false
+) {
+
+    const shape =
+        SHAPES[piece.type][piece.rotation];
+
+    for (let py = 0; py < 4; py++) {
+
+        for (let px = 0; px < 4; px++) {
+
+            if (!shape[py][px])
+                continue;
+
+            const x =
+                (piece.x + px) * CELL_SIZE;
+
+            const y =
+                (piece.y + py) * CELL_SIZE;
+
+            if (ghost) {
+
+                drawBlock(
+                    context,
+                    x,
+                    y,
+                    CELL_SIZE,
+                    COLORS[piece.type + 1],
+                    0.15
+                );
+
+            }
+            else {
+
+                drawBlock(
+                    context,
+                    x,
+                    y,
+                    CELL_SIZE,
+                    COLORS[piece.type + 1],
+                    1
+                );
+
+            }
+        }
+    }
+}
+
+
+/* =========================================================
+   PRÓXIMA PIEZA
+   ========================================================= */
+
+function drawNextPiece() {
+
+    nextCtx.clearRect(
+        0,
+        0,
+        nextCanvas.width,
+        nextCanvas.height
+    );
+
+    nextCtx.fillStyle = "#08050d";
+
+    nextCtx.fillRect(
+        0,
+        0,
+        nextCanvas.width,
+        nextCanvas.height
+    );
+
+    if (!nextPiece)
+        return;
+
+    const shape =
+        SHAPES[nextPiece.type][0];
+
+    const size = 22;
+
+    const offsetX = 15;
+    const offsetY = 5;
+
+    for (let py = 0; py < 4; py++) {
+
+        for (let px = 0; px < 4; px++) {
+
+            if (!shape[py][px])
+                continue;
+
+            drawBlock(
+                nextCtx,
+                offsetX + px * size,
+                offsetY + py * size,
+                size,
+                COLORS[nextPiece.type + 1]
+            );
+        }
+    }
+}
+
+
+/* =========================================================
+   ACTUALIZAR INTERFAZ
+   ========================================================= */
+
+function updateUI() {
+
+    document.getElementById("score")
+        .textContent = score;
+
+    document.getElementById("level")
+        .textContent = level;
+
+    document.getElementById("lines")
+        .textContent = lines;
+
+    drawNextPiece();
+}
+
+
+/* =========================================================
+   BUCLE PRINCIPAL
+   ========================================================= */
+
+function gameLoop(timestamp) {
+
+    if (!gameRunning)
+        return;
+
+    if (!paused && !gameOver) {
+
+        const delay =
+            getFallDelay();
+
+        if (
+            timestamp - lastFall >= delay
+        ) {
+
+            const test = {
+
+                ...currentPiece,
+
+                y: currentPiece.y + 1
+
+            };
+
+            if (!collision(test)) {
+
+                currentPiece.y++;
+
+            }
+            else {
+
+                placePiece();
+
+            }
+
+            lastFall = timestamp;
+        }
+
+    }
+
+    drawBoard();
+
+    updateUI();
+
+    requestAnimationFrame(gameLoop);
+}
+
+
+/* =========================================================
+   MOVER PIEZA
+   ========================================================= */
+
+function movePiece(direction) {
+
+    if (
+        !gameRunning ||
+        paused ||
+        gameOver
+    )
+        return;
+
+    const test = {
+
+        ...currentPiece,
+
+        x:
+            currentPiece.x + direction
+
+    };
+
+    if (!collision(test)) {
+
+        currentPiece.x += direction;
+
+    }
+
+}
+
+
+/* =========================================================
+   BAJAR PIEZA
+   ========================================================= */
+
+function softDrop() {
+
+    if (
+        !gameRunning ||
+        paused ||
+        gameOver
+    )
+        return;
+
+    const test = {
+
+        ...currentPiece,
+
+        y: currentPiece.y + 1
+
+    };
+
+    if (!collision(test)) {
+
+        currentPiece.y++;
+
+        score++;
+
+    }
+    else {
+
+        placePiece();
+
+    }
+}
+
+
+/* =========================================================
+   TECLADO
+   ========================================================= */
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (!gameRunning)
+            return;
+
+        const key =
+            event.key.toLowerCase();
+
+
+        /* Evitar scroll */
+
+        if (
+            key === " " ||
+            key === "arrowleft" ||
+            key === "arrowright" ||
+            key === "arrowdown" ||
+            key === "arrowup"
+        ) {
+
+            event.preventDefault();
+
+        }
+
+
+        if (key === "a" || key === "arrowleft") {
+
+            movePiece(-1);
+
+        }
+
+        else if (
+            key === "d" ||
+            key === "arrowright"
+        ) {
+
+            movePiece(1);
+
+        }
+
+        else if (
+            key === "s" ||
+            key === "arrowdown"
+        ) {
+
+            softDrop();
+
+        }
+
+        else if (
+            key === "w" ||
+            key === "arrowup"
+        ) {
+
+            if (!paused)
+                rotatePiece();
+
+        }
+
+        else if (key === " ") {
+
+            if (!paused)
+                hardDrop();
+
+        }
+
+        else if (key === "p") {
+
+            togglePause();
+
+        }
+
+        else if (key === "escape") {
+
+            exitGame();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   INICIAR PARTIDA
+   ========================================================= */
+
+function startGame() {
+
+    createBoard();
+
+    score = 0;
+    lines = 0;
+    level = 1;
+
+    gameOver = false;
+    paused = false;
+    gameRunning = true;
+
+    currentPiece =
+        createPiece();
+
+    nextPiece =
+        createPiece();
+
+    lastFall =
+        performance.now();
+
+    document
+        .getElementById("menuScreen")
+        .classList.add("hidden");
+
+    document
+        .getElementById("gameScreen")
+        .classList.remove("hidden");
+
+    document
+        .getElementById("gameOverlay")
+        .classList.add("hidden");
+
+    document
+        .getElementById("pauseButton")
+        .textContent = "⏸ PAUSAR";
+
+
+    /* Música */
+
+    if (musicEnabled) {
+        playRandomSong();
+    }
+
+
+    requestAnimationFrame(gameLoop);
+}
+
+
+/* =========================================================
+   GAME OVER
+   ========================================================= */
+
+function endGame() {
+
+    gameOver = true;
+    gameRunning = false;
+
+    document
+        .getElementById("overlayTitle")
+        .textContent = "GAME OVER";
+
+    document
+        .getElementById("overlayText")
+        .innerHTML =
+        `Puntaje: <b>${score}</b><br>
+         Líneas: <b>${lines}</b><br>
+         Nivel: <b>${level}</b>`;
+
+    document
+        .getElementById("gameOverlay")
+        .classList.remove("hidden");
+
+    document
+        .getElementById("music")
+        .pause();
+}
+
+
+/* =========================================================
+   REINTENTAR
+   ========================================================= */
+
+document
+    .getElementById("retryButton")
+    .addEventListener(
+        "click",
+        function() {
+
+            startGame();
+
+        }
+    );
+
+
+/* =========================================================
+   PAUSA
+   ========================================================= */
+
+function togglePause() {
+
+    if (
+        !gameRunning ||
+        gameOver
+    )
+        return;
+
+    paused = !paused;
+
+    const button =
+        document.getElementById(
+            "pauseButton"
+        );
+
+    if (paused) {
+
+        button.textContent =
+            "▶ CONTINUAR";
+
+        document
+            .getElementById("overlayTitle")
+            .textContent =
+            "PAUSA";
+
+        document
+            .getElementById("overlayText")
+            .textContent =
+            "La partida está pausada.";
+
+        document
+            .getElementById("retryButton")
+            .classList.add("hidden");
+
+        document
+            .getElementById("menuButton")
+            .classList.remove("hidden");
+
+        document
+            .getElementById("gameOverlay")
+            .classList.remove("hidden");
+
+        document
+            .getElementById("music")
+            .pause();
+
+    }
+    else {
+
+        button.textContent =
+            "⏸ PAUSAR";
+
+        document
+            .getElementById("gameOverlay")
+            .classList.add("hidden");
+
+        document
+            .getElementById("retryButton")
+            .classList.remove("hidden");
+
+        if (musicEnabled) {
+
+            document
+                .getElementById("music")
+                .play()
+                .catch(() => {});
+
+        }
+
+        lastFall =
+            performance.now();
+    }
+}
+
+
+/* =========================================================
+   BOTÓN PAUSA
+   ========================================================= */
+
+document
+    .getElementById("pauseButton")
+    .addEventListener(
+        "click",
+        togglePause
+    );
+
+
+/* =========================================================
+   SALIR
+   ========================================================= */
+
+function exitGame() {
+
+    gameRunning = false;
+    gameOver = false;
+
+    document
+        .getElementById("music")
+        .pause();
+
+    document
+        .getElementById("gameScreen")
+        .classList.add("hidden");
+
+    document
+        .getElementById("menuScreen")
+        .classList.remove("hidden");
+
+    document
+        .getElementById("gameOverlay")
+        .classList.add("hidden");
+
+}
+
+
+/* =========================================================
+   BOTÓN MENÚ
+   ========================================================= */
+
+document
+    .getElementById("menuButton")
+    .addEventListener(
+        "click",
+        exitGame
+    );
+
+
+document
+    .getElementById("exitButton")
+    .addEventListener(
+        "click",
+        exitGame
+    );
+
+
+/* =========================================================
+   BOTÓN JUGAR
+   ========================================================= */
+
+document
+    .getElementById("startButton")
+    .addEventListener(
+        "click",
+        startGame
+    );
+
+
+/* =========================================================
+   MÚSICA
+   ========================================================= */
+
+document
+    .getElementById("musicButton")
+    .addEventListener(
+        "click",
+        function() {
+
+            musicEnabled =
+                !musicEnabled;
+
+            this.textContent =
+                musicEnabled
+                    ? "🔊 MÚSICA: ON"
+                    : "🔇 MÚSICA: OFF";
+
+            if (!musicEnabled) {
+
+                music.pause();
+
+            }
+
+            else if (gameRunning && !paused) {
+
+                playRandomSong();
+
+            }
+
+        }
+    );
+
+
+/* =========================================================
+   CONTROLES
+   ========================================================= */
+
+document
+    .getElementById("controlsButton")
+    .addEventListener(
+        "click",
+        function() {
+
+            alert(
+`CONTROLES DE TETRIS.PHONK
+
+A / ←  = Mover izquierda
+D / →  = Mover derecha
+S / ↓  = Bajar pieza
+W / ↑  = Rotar
+ESPACIO = Caída instantánea
+P       = Pausar
+ESC     = Salir
+
+También podés usar las flechas del teclado.`
+            );
+
+        }
+    );
+
+
+/* =========================================================
+   INICIALIZACIÓN
+   ========================================================= */
+
+createBoard();
+
+drawBoard();
+
+</script>
+
+</body>
+</html>
+
+```
